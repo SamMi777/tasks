@@ -6,8 +6,8 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 function App(): JSX.Element {
     return (
         <div className="App">
-            <header>
-                <h1 className="App-header">COS420 Website by Sam Minor</h1>
+            <header className="App-header">
+                UM COS420 with React Hooks and TypeScript
             </header>
             <p>
                 Sam Minor says Hello World!
