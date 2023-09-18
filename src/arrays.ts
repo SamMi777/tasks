@@ -57,9 +57,14 @@ export const removeDollars = (amounts: string[]): number[] => {
  * string that ends in "!" should be made uppercase. Also, remove any strings that end
  * in question marks ("?").
  */
+
+//needs fix
+
 export const shoutIfExclaiming = (messages: string[]): string[] => {
     const updatedmsg = messages.map((message: string): string =>
-        message[length - 1] === "!" ? message.toUpperCase() : message
+        message[length - 1] === "!"
+            ? message.toUpperCase()
+            : message.toUpperCase()
     );
     const res = updatedmsg.filter(
         (msg: string): boolean => msg[msg.length - 1] !== "?"
@@ -85,6 +90,9 @@ export function countShortWords(words: string[]): number {
  * the colors are either 'red', 'blue', or 'green'. If an empty list is given,
  * then return true.
  */
+
+//needs fix
+
 export function allRGB(colors: string[]): boolean {
     if (colors.length === 0) {
         return true;
@@ -110,6 +118,9 @@ export function allRGB(colors: string[]): boolean {
  * For instance, the array [1, 2, 3] would become "6=1+2+3".
  * And the array [] would become "0=0".
  */
+
+//needs fix
+
 export function makeMath(addends: number[]): string {
     if (addends.length === 0) {
         return "0=0";
@@ -136,6 +147,9 @@ export function makeMath(addends: number[]): string {
  */
 
 //if the value is not negative, increment negative position
+
+//needs fix
+
 export function injectPositive(values: number[]): number[] {
     const negpos = values.reduce(
         (currentTotal: number, val: number, i: number) =>
