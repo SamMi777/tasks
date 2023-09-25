@@ -136,8 +136,6 @@ export function makeMath(addends: number[]): string {
 
 //if the value is not negative, increment negative position
 
-//needs fix
-
 export function injectPositive(values: number[]): number[] {
     const negpos = values.reduce(
         (currentTotal: number, val: number, i: number) =>
