@@ -1,12 +1,18 @@
+import { idText } from "typescript";
 import { Answer } from "./interfaces/answer";
 import { Question, QuestionType } from "./interfaces/question";
+import { duplicateQuestion, makeBlankQuestion } from "./objects";
 
 /**
  * Consumes an array of questions and returns a new array with only the questions
  * that are `published`.
  */
 export function getPublishedQuestions(questions: Question[]): Question[] {
-    return [];
+    const clone = [...questions];
+    const pubQuestion = clone.filter(
+        (Quest: Question): boolean => Quest.published
+    );
+    return pubQuestion;
 }
 
 /**
@@ -14,8 +20,30 @@ export function getPublishedQuestions(questions: Question[]): Question[] {
  * considered "non-empty". An empty question has an empty string for its `body` and
  * `expected`, and an empty array for its `options`.
  */
+
+//fix
+
 export function getNonEmptyQuestions(questions: Question[]): Question[] {
-    return [];
+    const clone = [...questions];
+    const res = clone.reduce(
+        (myArray: Array<string>, Quest: Question) => 
+            (Quest.body !== "" &&
+            Quest.expected !== "" &&
+            Quest.options.length > 0 &&
+            !Array.isArray(Quest.options))
+            ?
+            myArray, 
+            [...myArray, Quest.name],
+        []
+    );
+    const nonEmpt = questions.filter(
+        (Quest: Question): boolean =>
+            Quest.body !== "" &&
+            Quest.expected !== "" &&
+            Quest.options.length > 0 &&
+            !Array.isArray(Quest.options)
+    );
+    return nonEmpt;
 }
 
 /***
@@ -26,7 +54,12 @@ export function findQuestion(
     questions: Question[],
     id: number
 ): Question | null {
-    return null;
+    const retval = questions.find((val: Question): boolean => val.id === id);
+    if (retval === null || retval === undefined) {
+        return null;
+    } else {
+        return retval as Question;
+    }
 }
 
 /**
@@ -34,29 +67,52 @@ export function findQuestion(
  * with the given `id`.
  */
 export function removeQuestion(questions: Question[], id: number): Question[] {
-    return [];
+    const clonedQuests = [...questions];
+    const remQ = clonedQuests.filter(
+        (theQuestion: Question): boolean => theQuestion.id !== id
+    );
+    return remQ;
 }
 
 /***
  * Consumes an array of questions and returns a new array containing just the names of the
  * questions, as an array.
  */
+
 export function getNames(questions: Question[]): string[] {
-    return [];
+    const clone = [...questions];
+    const res = clone.reduce(
+        (myArray: Array<string>, Quest: Question) => [...myArray, Quest.name],
+        []
+    );
+
+    return res;
 }
 
 /***
  * Consumes an array of questions and returns the sum total of all their points added together.
  */
 export function sumPoints(questions: Question[]): number {
-    return 0;
+    const sum = questions.reduce(
+        (currentTotal: number, val: Question) => currentTotal + val.points,
+        0
+    );
+    return sum;
 }
 
 /***
  * Consumes an array of questions and returns the sum total of the PUBLISHED questions.
  */
 export function sumPublishedPoints(questions: Question[]): number {
-    return 0;
+    const clone = [...questions];
+    const sum = clone.reduce(
+        (currentTotal: number, val: Question) =>
+            null !== val && val.published
+                ? currentTotal + val.points
+                : currentTotal,
+        0
+    );
+    return sum;
 }
 
 /***
@@ -77,14 +133,34 @@ id,name,options,points,published
  * Check the unit tests for more examples!
  */
 export function toCSV(questions: Question[]): string {
-    return "";
+    const clone = [...questions];
+    const CSV = clone.reduce(
+        (retval: string, val: Question) =>
+            (retval =
+                retval +
+                "\n" +
+                val.id.toString() +
+                "," +
+                val.name +
+                "," +
+                val.options.length.toString() +
+                "," +
+                val.points.toString() +
+                "," +
+                val.published +
+                ""),
+        "id,name,options,points,published"
+    );
+    return CSV;
 }
 
 /**
  * Consumes an array of Questions and produces a corresponding array of
  * Answers. Each Question gets its own Answer, copying over the `id` as the `questionId`,
  * making the `text` an empty string, and using false for both `submitted` and `correct`.
- */
+ *questionId: 1, correct: false, text: "", submitted: false
+ **/
+
 export function makeAnswers(questions: Question[]): Answer[] {
     return [];
 }
@@ -94,15 +170,28 @@ export function makeAnswers(questions: Question[]): Answer[] {
  * each question is now published, regardless of its previous published status.
  */
 export function publishAll(questions: Question[]): Question[] {
-    return [];
+    const vals = { ...questions };
+    const pubAll = vals.map((val: Question): Question => {
+        val.published = true;
+        return val;
+    });
+    return pubAll;
 }
 
 /***
  * Consumes an array of Questions and produces whether or not all the questions
  * are the same type. They can be any type, as long as they are all the SAME type.
  */
+
+//fix
+
 export function sameType(questions: Question[]): boolean {
-    return false;
+    const clone = [...questions];
+    const mytyp = clone[0].type as QuestionType;
+    const allsameType = clone.reduce(
+        (Quest: Question): boolean => (Quest.type as QuestionType) === mytyp
+    );
+    return allsameType;
 }
 
 /***
@@ -116,7 +205,8 @@ export function addNewQuestion(
     name: string,
     type: QuestionType
 ): Question[] {
-    return [];
+    const newQuest = [...questions, makeBlankQuestion(id, name, type)];
+    return newQuest;
 }
 
 /***
@@ -129,7 +219,16 @@ export function renameQuestionById(
     targetId: number,
     newName: string
 ): Question[] {
-    return [];
+    const newQuest = [...questions];
+    const retval = newQuest.findIndex(
+        (val: Question): boolean => val.id === targetId
+    ) as number;
+    if (retval >= 0) {
+        const newval = { ...newQuest[retval] };
+        newval.name = newName;
+        newQuest.splice(retval, 1, newval);
+    }
+    return newQuest;
 }
 
 /***
@@ -144,7 +243,21 @@ export function changeQuestionTypeById(
     targetId: number,
     newQuestionType: QuestionType
 ): Question[] {
-    return [];
+    const newQuest = [...questions];
+    const retval = newQuest.findIndex(
+        (val: Question): boolean => val.id === targetId
+    ) as number;
+    if (retval >= 0) {
+        const newval = {
+            ...newQuest[retval]
+        };
+        if (newQuestionType !== "multiple_choice_question") {
+            newval.options = [];
+        }
+        newval.type = newQuestionType;
+        newQuest.splice(retval, 1, newval);
+    }
+    return newQuest;
 }
 
 /**
@@ -163,7 +276,24 @@ export function editOption(
     targetOptionIndex: number,
     newOption: string
 ): Question[] {
-    return [];
+    const newQuest = [...questions];
+    const retval = newQuest.findIndex(
+        (val: Question): boolean => val.id === targetId
+    ) as number;
+    if (retval >= 0) {
+        const newval = {
+            ...newQuest[retval],
+            options: [...newQuest[retval].options]
+        };
+        if (targetOptionIndex === -1) {
+            newval.options.splice(newval.options.length, 0, newOption);
+        } else {
+            newval.options.splice(targetOptionIndex, 1, newOption);
+            console.log(newOption);
+        }
+        newQuest.splice(retval, 1, newval);
+    }
+    return newQuest;
 }
 
 /***
@@ -177,5 +307,13 @@ export function duplicateQuestionInArray(
     targetId: number,
     newId: number
 ): Question[] {
-    return [];
+    const newQuest = [...questions];
+    const retval = newQuest.findIndex(
+        (val: Question): boolean => val.id === targetId
+    ) as number;
+    if (retval >= 0) {
+        const newval = duplicateQuestion(newId, newQuest[retval]);
+        newQuest.splice(retval + 1, 0, newval);
+    }
+    return newQuest;
 }
