@@ -21,29 +21,16 @@ export function getPublishedQuestions(questions: Question[]): Question[] {
  * `expected`, and an empty array for its `options`.
  */
 
-//fix
-
 export function getNonEmptyQuestions(questions: Question[]): Question[] {
     const clone = [...questions];
-    const res = clone.reduce(
-        (myArray: Array<string>, Quest: Question) => 
-            (Quest.body !== "" &&
-            Quest.expected !== "" &&
-            Quest.options.length > 0 &&
-            !Array.isArray(Quest.options))
-            ?
-            myArray, 
-            [...myArray, Quest.name],
-        []
-    );
-    const nonEmpt = questions.filter(
-        (Quest: Question): boolean =>
-            Quest.body !== "" &&
-            Quest.expected !== "" &&
-            Quest.options.length > 0 &&
-            !Array.isArray(Quest.options)
-    );
-    return nonEmpt;
+    const res = clone.filter((Quest: Question): boolean => {
+        const rval =
+            Quest.body.length > 0 ||
+            Quest.expected.length > 0 ||
+            Quest.options.length > 0;
+        return rval;
+    });
+    return res;
 }
 
 /***
@@ -162,7 +149,19 @@ export function toCSV(questions: Question[]): string {
  **/
 
 export function makeAnswers(questions: Question[]): Answer[] {
-    return [];
+    const clone = [...questions];
+    const rval: Array<Answer> = [];
+    const CSV = clone.reduce((myans: string, val: Question) => {
+        const ans: Answer = {
+            questionId: val.id,
+            correct: false,
+            text: "",
+            submitted: false
+        };
+        rval.push(ans);
+        return "";
+    }, "");
+    return rval;
 }
 
 /***
@@ -170,7 +169,7 @@ export function makeAnswers(questions: Question[]): Answer[] {
  * each question is now published, regardless of its previous published status.
  */
 export function publishAll(questions: Question[]): Question[] {
-    const vals = { ...questions };
+    const vals = questions.map((Quest: Question): Question => ({ ...Quest }));
     const pubAll = vals.map((val: Question): Question => {
         val.published = true;
         return val;
@@ -183,15 +182,20 @@ export function publishAll(questions: Question[]): Question[] {
  * are the same type. They can be any type, as long as they are all the SAME type.
  */
 
-//fix
-
 export function sameType(questions: Question[]): boolean {
     const clone = [...questions];
-    const mytyp = clone[0].type as QuestionType;
-    const allsameType = clone.reduce(
-        (Quest: Question): boolean => (Quest.type as QuestionType) === mytyp
+    const allmultChoice = clone.reduce(
+        (same: boolean, Quest: Question) =>
+            (same = same && Quest.type === "multiple_choice_question"),
+        true
     );
-    return allsameType;
+    const allshortAns = clone.reduce(
+        (same: boolean, Quest: Question) =>
+            (same = same && Quest.type === "short_answer_question"),
+        true
+    );
+
+    return allmultChoice || allshortAns;
 }
 
 /***
